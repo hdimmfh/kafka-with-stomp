@@ -1,0 +1,14 @@
+
+### IntelliJ IDEA ###
+.gradle
+.idea
+build
+build.gradle
+gradlew
+gradlew.bat
+HELP.md
+settings.gradle
+
+### MAKEFILE LOG ###
+zookeper.pid
+server.pid

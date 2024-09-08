@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>KAFKA&STOMP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://cdn.jsdelivr.net/sockjs/1.1.4/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script type="module">
+        import { auto_submit } from './js/auto_submit.js';
+        import { fetchInitialMessages, sendMessage as importedSendMessage} from './js/stomp_module.js';
+        window.sendMessage = importedSendMessage;
+        auto_submit();
+        fetchInitialMessages();
+    </script>
+    <link rel="stylesheet" href="./css/main.css">
+</head>
+<body>
+<div>
+    <div id="messages" class="scroll-container"></div>
+    <div style="height: 20px"></div>
+    <div style="display: flex; flex-direction: column;">
+        <label for="name"></label><input type="text" id="name" placeholder="Type your name first."/>
+        <div style="height: 10px"></div>
+        <div id="message-input-container">
+            <label for="message"></label><input type="text" id="message" placeholder="Type your message here."/>
+            <div style="height: 10px"></div>
+            <div id="send-button">
+                <button  onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+        <div id="text-box">
+            <h2 style="padding: 0; margin: 0 0 6px 0">🚀 Utilized Skills</h2>
+            <div>
+                1️⃣ <strong>EDA</strong> by using <strong>Kafka</strong>
+            </div>
+            <div>
+                2️⃣ <strong>Client-Server Socket Connection</strong> by using <strong>STOMP</strong>
+            </div>
+            <div>
+                3️⃣ <strong>Containerization</strong> by using <strong>Docker</strong>
+            </div>
+            <div>
+                4️⃣ <strong>Server</strong> by using <strong>SpringBoot</strong>
+            </div>
+            <div id="tag">
+                #Kafka #STOMP #Docker #SpringBoot
+            </div>
+            <div id="author">
+                Utilized by Myeongsu Koo (hdimmfh). Thank you for watching.
+            </div>
+        </div>
+    </div>
+
+
+</div>
+</body>
+</html>
