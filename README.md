@@ -24,7 +24,7 @@ STOMP만으로도 다인원, 실시간 채팅 기능을 충분히 구현할 수 
 Kafka를 사용하지 않더라도 STOMP의 기능만으로 이러한 요구를 충족시킬 수 있습니다.
 
 > 클라이언트로부터 생성되는 메세지의 흐름은 아래와 같습니다.
-![msg_flow_](https://github.com/user-attachments/assets/8b1176f1-bad4-4a53-9759-555b1136a3d2)
+![Group 22](https://github.com/user-attachments/assets/f7c2ddc9-4eef-4dfb-87fb-982926b9e25a)
 > &nbsp; 그렇다면 본 프로젝트에서는 왜 Kafka를 사용했을까요?
 
 ### **3️⃣ Kafka란?**
@@ -45,6 +45,13 @@ Kafka는 데이터의 스트림을 주제(Topic)별로 분류하여, 프로듀�
 > 메시지 처리를 서버와 분리할 수 있어 이 문제를 해결할 수 있습니다. 
 > 각 서버는 Kafka 컨슈머를 통해 메시지를 읽어들이고, 
 > 클라이언트가 어떤 서버에 연결되든지 간에 일관된 데이터를 응답할 수 있게 됩니다.
+> <br/><br/>
+> &nbsp;여러개의 서버(노드)를 활용하는 분산 환경에서의 메세지 송수신 흐름은 하래와 같습니다.
+> ![Group 26 (1)](https://github.com/user-attachments/assets/72a86b1c-b725-4cab-baba-fc949a539be3)
+> &nbsp;메시지 송신자(SENDER CLIENT)가 서버1에 연결되어 있고, 
+> 수신자(RECEIVER CLIENT)가 서버2에 연결되어 있는 상황입니다.
+> 이 경우, 메시지는 각 서버의 세션에서 관리되지 않고, 
+> 독립적으로 운영되는 Kafka 브로커를 통해 모든 서버에 라우팅됩니다. 따라서 분산 환경에서도 정상적으로 작동하게 됩니다.
 
 ### **4️⃣ 개발 기간**
 - `2024.07.10`: (BE) 카프카 Configuration 구현
