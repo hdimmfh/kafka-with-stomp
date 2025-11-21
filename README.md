@@ -1,70 +1,100 @@
-## 프로젝트 개요
+# Project Overview
 
-### **0️⃣ 결과물**
-> Sample Result
+## 0. Output Example
+> Sample Result  
 > ![image](https://github.com/user-attachments/assets/7a715d55-92c9-48fd-9bd6-ccbcbbb8ca26)
 
-### **1️⃣ 구성**
-&nbsp;본 프로젝트는 `다인원 참여`, `고가용성`, `실시간성`이 보장된 채팅 기능구현을 목적으로합니다.
-1. **STOMP Connection** : 클라이언트 STOMP소켓은 서버의 STOMP소켓채널에 접속합니다.
-2. **Client STOMP** : 클라이언트는 소켓을 통해 메세지를 전송합니다.
-3. **Kafka Producing** : 전송된 소켓 메세지는 카프카 브로커에 전송됩니다.
-4. **Kafka Consuming** : 카프카 컨슈머는 저장된 메세지를 지속적으로 폴링합니다.
-5. **STOMP Registry** : 폴링된 메세지는 STOMP소켓채널에 저장됩니다.
-6. **Session History** : 폴링된 메세지는 세션메모리에 저장됩니다.
+## 1. Architecture
 
-- 사용자와 서버는 STOMP(Simple Text Oriented Messaging Protocol)를 통해 실시간 통신합니다.
+This project aims to implement a real-time chat system that supports **multi-user participation**, **high availability**, and **low-latency communication**.
 
-### **2️⃣ STOMP란?**
-&nbsp;STOMP는 WebSocket 통신을 통해 서버와 메시지를 주고받는 프로토콜입니다.
-서버는 STOMP 엔드포인트 및 기타 구성을 사전에 준비합니다. 
-클라이언트는 서버가 제공하는 STOMP 엔드포인트로 접속하여,
-특정 STOMP 토픽을 구독하고 실시간으로 메시지를 수신합니다. 
-STOMP만으로도 다인원, 실시간 채팅 기능을 충분히 구현할 수 있으며,
-Kafka를 사용하지 않더라도 STOMP의 기능만으로 이러한 요구를 충족시킬 수 있습니다.
+1. **STOMP Connection**  
+   Clients connect to the server’s STOMP WebSocket endpoint.
 
-> 클라이언트로부터 생성되는 메세지의 흐름은 아래와 같습니다.
+2. **Client STOMP**  
+   Clients send chat messages through the STOMP socket.
+
+3. **Kafka Producing**  
+   Messages received over the socket are forwarded to the Kafka broker.
+
+4. **Kafka Consuming**  
+   Kafka consumers continuously poll messages from the topic.
+
+5. **STOMP Registry**  
+   Polled messages are delivered to subscribed clients via STOMP channels.
+
+6. **Session History**  
+   Polled messages are also stored in session memory.
+
+STOMP (Simple Text Oriented Messaging Protocol) enables real-time communication between clients and the server.
+
+---
+
+## 2. What is STOMP?
+
+STOMP is a text‑based messaging protocol built on top of WebSocket.  
+The server prepares STOMP endpoints and configuration, and clients connect to these endpoints to subscribe to topics and receive messages in real time.
+
+STOMP alone is sufficient to implement multi‑user real‑time chat functionality, even without Kafka.
+
+> Message flow from the client:
 ![Group 22](https://github.com/user-attachments/assets/f7c2ddc9-4eef-4dfb-87fb-982926b9e25a)
-> &nbsp; 그렇다면 본 프로젝트에서는 왜 Kafka를 사용했을까요?
 
-### **3️⃣ Kafka란?**
-&nbsp;Kafka는 대규모 분산 스트리밍 플랫폼으로, 데이터의 실시간 전송과 처리를 지원합니다.
-Kafka는 데이터의 스트림을 주제(Topic)별로 분류하여, 프로듀서가 데이터를 전송하고, 
-컨슈머가 이를 수신하여 처리합니다. 
-서버는 Kafka 클러스터를 구성하여 데이터를 안정적으로 저장하고 처리할 수 있는 환경을 제공합니다. 
-클라이언트는 Kafka 프로듀서 및 컨슈머 API를 사용하여 데이터를 송수신하며,
-실시간 데이터 스트리밍 및 이벤트 처리를 수행합니다.
+**So why does this project use Kafka?**
 
-> 클라이언트로부터 생성되는 메세지의 흐름은 아래와 같습니다.
+---
+
+## 3. What is Kafka?
+
+Kafka is a distributed streaming platform designed for high‑throughput, real‑time data pipelines.  
+It categorizes data into **topics**, where producers send messages and consumers read them.
+
+Kafka allows servers to reliably store and distribute messages across distributed systems.
+
+> Message flow through Kafka:
 ![msg_flow](https://github.com/user-attachments/assets/699d531b-e92a-4d5b-b564-11b60560abdc)
-> &nbsp;Kafka를 사용하면, 위 그림과 같이 클라이언트-서버 간의 STOMP 소켓 통신을 독립적으로 관리할 수 있습니다.
-> 분산 서버 환경에서 동일한 채팅방에 참여하는 클라이언트가 서로 다른 서버에 연결된 경우, 
-> 각 클라이언트는 서로 다른 STOMP 저장소(history)를 가지고 있어 클라이언트 간의 채팅이 불가능하게 됩니다.
-> <br/><br/>
-> &nbsp;하지만 클라이언트로부터 전송받은 메시지를 Kafka를 경유하게 하면, 
-> 메시지 처리를 서버와 분리할 수 있어 이 문제를 해결할 수 있습니다. 
-> 각 서버는 Kafka 컨슈머를 통해 메시지를 읽어들이고, 
-> 클라이언트가 어떤 서버에 연결되든지 간에 일관된 데이터를 응답할 수 있게 됩니다.
-> <br/><br/>
-> &nbsp;여러개의 서버(노드)를 활용하는 분산 환경에서의 메세지 송수신 흐름은 아래와 같습니다.
-> ![Group 26 (1)](https://github.com/user-attachments/assets/72a86b1c-b725-4cab-baba-fc949a539be3)
-> &nbsp;메시지 송신자(SENDER CLIENT)가 서버1에 연결되어 있고, 
-> 수신자(RECEIVER CLIENT)가 서버2에 연결되어 있는 상황입니다.
-> 이 경우, 메시지는 각 서버의 세션에서 관리되지 않고, 
-> 독립적으로 운영되는 Kafka 브로커를 통해 모든 서버에 라우팅됩니다. 따라서 분산 환경에서도 정상적으로 작동하게 됩니다.
 
-### **4️⃣ 개발 기간**
-- `2024.07.10`: (BE) 카프카 Configuration 구현
-- `2024.07.12`: (BE) STOMP Configuration 구현
-- `2024.09.07`: (BE) 기타 Component 구현
-- `2024.09.07`: (BE) API 구현
-- `2024.09.07`: (FE) 채팅 페이지 구현
-- `2024.09.08`: (FE) 코드 리팩토링, FE 디바이스 호환문제 해결
+By routing messages through Kafka, STOMP communication can be managed independently across distributed server nodes.
 
+In a distributed environment, clients in the same chat room may connect to different servers, each with its own STOMP session storage. Without Kafka, clients across servers cannot receive each other’s messages.
 
-### **5️⃣ 사용법**
-1. `./gradlew build` 커맨드로 프로젝트를 빌드합니다.
-2. 서버 실행 전 `Makefile`스크립트를 실행하여 카프카 및 주키퍼 서버를 실행합니다. 만약 스크립트와 카프카의 저장위치가 다르거나 도커, aws의 MSK를 사용하는 경우 스크립트를 적절히 변경한 후 사용합니다.
-3. 서버 실행 전 `KafkaConstant`를 검토합니다. 카프카 브로커의 IP 또는 기타 구성을 확인합니다.
-4. 프로젝트를 Docker 이미지로 빌드하고싶다면 `Dockerfile`설정을 검토한 후 build합니다.
-5. localhost:8080에 접속하여, 채팅해보며 정상작동여부를 검토합니다.
+However, by routing messages through Kafka:
+- Message processing becomes server‑independent  
+- All servers receive consistent chat messages via Kafka consumers  
+- Clients receive the same data regardless of which server they are connected to  
+
+> Distributed message flow across multiple nodes:
+![Group 26 (1)](https://github.com/user-attachments/assets/72a86b1c-b725-4cab-baba-fc949a539be3)
+
+In this example, the **sender** is connected to Server 1 and the **receiver** is connected to Server 2.  
+Messages bypass server‑local session memory and instead flow through Kafka, enabling consistent communication across server nodes.
+
+---
+
+## 4. Development Timeline
+- **2024.07.10** — (BE) Kafka configuration implemented  
+- **2024.07.12** — (BE) STOMP configuration implemented  
+- **2024.09.07** — (BE) Additional components implemented  
+- **2024.09.07** — (BE) API implementation  
+- **2024.09.07** — (FE) Chat UI implemented  
+- **2024.09.08** — (FE) Code refactoring & device compatibility fixes  
+
+---
+
+## 5. Usage Guide
+
+1. Build the project using:
+   ```
+   ./gradlew build
+   ```
+
+2. Before running the server, execute the `Makefile` script to start Kafka and Zookeeper.  
+   If your Kafka installation path differs or if using Docker/AWS MSK, adjust the script accordingly.
+
+3. Review `KafkaConstant` before launching the server.  
+   Confirm the Kafka broker IP and other configurations.
+
+4. To build a Docker image for deployment, review and build using the provided `Dockerfile`.
+
+5. Access `http://localhost:8080` and test the chat application to verify correct behavior.
+
